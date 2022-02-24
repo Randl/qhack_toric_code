@@ -40,6 +40,15 @@ def get_star(x, y, size_x, size_y):
     return res
 
 
+from scipy.stats import rv_continuous
+
+
+class sin_prob_dist(rv_continuous):
+    def _pdf(self, theta):
+        # The 0.5 is so that the distribution is normalized
+        return 0.5 * np.sin(theta)
+
+
 class ToricCode:
     def __init__(self, x, y, class_size=4):
         self.x, self.y = x, y
@@ -124,7 +133,12 @@ class ToricCode:
     def measure_haar(self, qubits):
         self.circ.barrier()
         for x, y in qubits:
-            theta, phi, lam = 0, 0, 0  # TODO: sample
+            # https://pennylane.ai/qml/demos/tutorial_haar_measure.html
+            # Samples of theta should be drawn from between 0 and pi
+            sin_sampler = sin_prob_dist(a=0, b=np.pi)
+
+            phi, lam = 2 * np.pi * np.random.uniform(size=2)  # Sample phi and omega as normal
+            theta = sin_sampler.rvs(size=1)  # Sample theta from our new distribution
             self.circ.u(theta, phi, lam, self.regs[x][y])
         self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(len(qubits)))
 

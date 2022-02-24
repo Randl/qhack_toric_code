@@ -1,6 +1,5 @@
-from tqdm import tqdm
-
 import itertools
+from collections import defaultdict
 
 import numpy as np
 from qiskit import transpile
@@ -24,8 +23,9 @@ def purity_single_realization(counts):
             factor = (-2) ** (-hamming_distance(s1, s2))
             p2 = counts[s2] / N
             pur += factor * p1 * p2  # TODO unbias?
-    # print(q_cnt, np.log(pur)/np.log(2), -q_cnt-np.log(pur)/np.log(2))
-    # -log(pur) = -qcnt* log(2) - log(por)
+            # print(s1,s2,factor, p1,p2, factor * p1 * p2 ,pur)
+    # print(len(counts), N, q_cnt, np.log(pur)/np.log(2), -q_cnt-np.log(pur)/np.log(2))
+    # -log(pur) = -qcnt* log(2) - log(pur)
     return 2 ** q_cnt * pur
 
 
@@ -37,10 +37,10 @@ def second_renyi_entropy(all_counts):
 def get_subsystem_counts(full_counts, sub_idx):
     all_subsystem_counts = []
     for counts in full_counts:
-        subsystem_counts = {}
+        subsystem_counts = defaultdict(lambda: 0)
         for s in counts:
             s_sub = ''.join(s[i] for i in sub_idx)
-            subsystem_counts[s_sub] = counts[s]
+            subsystem_counts[s_sub] += counts[s]
         all_subsystem_counts.append(subsystem_counts)
     return all_subsystem_counts
 

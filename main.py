@@ -64,4 +64,6 @@ for i in range(sx):
 
 backend_sim = Aer.get_backend('qasm_simulator')
 topo_ent = calculate_topo_entropy_pauli(backend_sim, [(1, 1), (2, 0), (2, 1), (3, 1)], [(0, 1), (2,), (3,)])
+topo_ent2 = calculate_topo_entropy_pauli(backend_sim, [(0, 1), (1, 1), (1, 2), (2, 1)], [(0, 1), (2,), (3,)])
 print('topo entropy', topo_ent / np.log(2))
+print('topo entropy', topo_ent2 / np.log(2))
