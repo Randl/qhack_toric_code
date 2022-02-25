@@ -21,17 +21,12 @@ def create_m_particles(tc, string):
 
 
 def apply_cxxxx_on_square(tc, upper_corner):
-    cXXXX = np.kron(np.array([[1, 0], [0, 0]]), np.kron(sx, np.kron(sx, np.kron(sx, sx)))) + \
-            np.kron(np.array([[0, 0], [0, 1]]), np.kron(s0, np.kron(s0, np.kron(s0, s0))))
-
     x, y = upper_corner
     if x % 2 == 0:
         locs = [(x, y), (x + 1, y), (x + 2, y), (x + 1, y + 1)]
     else:
         locs = [(x, y), (x + 1, y - 1), (x + 2, y), (x + 1, y)]
-    #print(locs)
     tc.circ.mct(control_qubits=[tc.ancillas[0]], target_qubit=[tc.regs[l[0]][l[1]] for l in locs])
-    # tc.circ.unitary(cXXXX, [tc.regs[l[0]][l[1]] for l in locs] + [tc.ancillas[0]])
 
 
 def apply_cxxyyzz_on_square(tc, upper_corner):
@@ -54,7 +49,7 @@ def em_braiding_phase(backend, x, y):
     x_string = [(2, 1), (2, 2)]
     create_e_particles(tc, x_string)
 
-    z_string = [(1, 4), (0, 3), (1, 3)]  # , (0,2), (1,2)]
+    z_string = [(1, 4), (0, 3), (1, 3)]
     create_m_particles(tc, z_string)
 
     tc.circ.h(tc.ancillas[0])

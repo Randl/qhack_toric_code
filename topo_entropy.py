@@ -28,12 +28,8 @@ def purity_single_realization(counts):
         for s2 in counts:
             factor = (-2) ** (-hamming_distance(s1, s2))
             p2 = counts[s2] / N
-            pur += factor * p1 * (N * p2 - 1) / (N - 1)  # TODO unbias?
-    #         if q_cnt==4:
-    #             print(s1,s2,factor, p1,p2, factor * p1 * p2, pur, np.log(pur)/np.log(2))
-    # print(len(counts), N, q_cnt, np.log(pur)/np.log(2), -q_cnt-np.log(pur)/np.log(2))
-    # -log(pur) = -qcnt* log(2) - log(pur)
-    return 2 ** q_cnt * pur
+            pur += 2 ** q_cnt * factor * p1 * (N * p2 - 1) / (N - 1)
+    return pur
 
 
 def second_renyi_entropy(all_counts):
@@ -42,7 +38,6 @@ def second_renyi_entropy(all_counts):
 
 
 def get_subsystem_counts(full_counts, sub_idx):
-    print(sub_idx)
     all_subsystem_counts = []
     for counts in full_counts:
         subsystem_counts = defaultdict(lambda: 0)
@@ -60,8 +55,6 @@ def subsystem_sre(full_counts, sub_idx):
 def calculate_s_subsystems(full_counts, subsystems):
     one = [subsystem_sre(full_counts, sub_idx) for sub_idx in subsystems]
     two_subsystems = [subsystems[0] + subsystems[1], subsystems[0] + subsystems[2], subsystems[1] + subsystems[2]]
-    print(subsystems)
-    print(two_subsystems)
     two = [subsystem_sre(full_counts, sub_idx) for sub_idx in two_subsystems]
     three = [second_renyi_entropy(full_counts)]
     return one, two, three
