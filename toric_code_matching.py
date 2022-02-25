@@ -71,7 +71,7 @@ def is_corner_matching(size, coo):
 
 
 class ToricCodeMatching:
-    def __init__(self, x, y, classical_bit_count=4):
+    def __init__(self, x, y, ancillas_count=0, classical_bit_count=4):
         """
 
         :param x: Column count. In case of matching boundary condition even rows has one less qubit
@@ -86,7 +86,11 @@ class ToricCodeMatching:
                      for
                      lev in range(self.y)]  # first coordinate is row index, second is column index
         self.c_reg = ClassicalRegister(classical_bit_count)
-        self.circ = QuantumCircuit(*self.regs, self.c_reg)
+        if ancillas_count>0:
+            self.ancillas = QuantumRegister(ancillas_count)
+            self.circ = QuantumCircuit(*self.regs, self.ancillas, self.c_reg)
+        else:
+            self.circ = QuantumCircuit(*self.regs, self.c_reg)
 
         plaquette_reprs_all = []
         for i, r in enumerate(self.regs):
@@ -168,7 +172,7 @@ class ToricCodeMatching:
             sin_sampler = sin_prob_dist(a=0, b=np.pi)
 
             phi, lam = 2 * np.pi * np.random.uniform(size=2)  # Sample phi and omega as normal
-            theta = sin_sampler.rvs(size=1)  # Sample theta from our new distribution
+            theta = sin_sampler.rvs(size=1)[0]  # Sample theta from our new distribution
             self.circ.u(theta, phi, lam, self.regs[x][y])
         self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(len(qubits)))
 
