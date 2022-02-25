@@ -1,5 +1,6 @@
 import numpy as np
 from qiskit import Aer
+from qiskit import IBMQ
 
 from topo_braiding import em_braiding_phase
 from topo_entropy import calculate_topo_entropy_pauli, calculate_topo_entropy_haar
@@ -18,7 +19,22 @@ px, py = tc.plaquette_x, tc.plaquette_y
 
 backend_sim = Aer.get_backend('qasm_simulator')
 
-theta_em, err_theta_em = em_braiding_phase(backend_sim, x, y)
+IBMQ.enable_account(
+    token='5e4d74f37c6f8990de25e5b908302a1e6369d481238ff437fa8a996f215deec0b535a9c7891f185bae6173695aa6e173e9342dd4399f6f70e45dcb3b8aab3cea',
+    hub='ibm-q-sherbrooke',
+    group='udes',
+    project='quicophy')
+IBMQ.save_account(
+    token='5e4d74f37c6f8990de25e5b908302a1e6369d481238ff437fa8a996f215deec0b535a9c7891f185bae6173695aa6e173e9342dd4399f6f70e45dcb3b8aab3cea',
+    hub='ibm-q-sherbrooke',
+    group='udes',
+    project='quicophy')
+IBMQ.load_account()
+provider = IBMQ.get_provider(hub='ibm-q-sherbrooke', group='udes', project='quicophy')
+backend_hardware = provider.get_backend('ibm_washington')
+backend = backend_hardware
+
+theta_em, err_theta_em = em_braiding_phase(backend, x, y)
 
 print('theta_em = {:.3f} +/- {:.3f}'.format(theta_em, err_theta_em))
 
@@ -29,7 +45,7 @@ for i in range(px):
             continue
         plaq = get_plaquette_matching(j, i)
         print(plaq)
-        topo_ent = calculate_topo_entropy_pauli(backend_sim, (x, y), plaq, abc_2x2)
+        topo_ent = calculate_topo_entropy_pauli(backend, (x, y), plaq, abc_2x2)
         print('topo entropy', topo_ent / np.log(2))
-        topo_ent = calculate_topo_entropy_haar(backend_sim, (x, y), plaq, abc_2x2)
+        topo_ent = calculate_topo_entropy_haar(backend, (x, y), plaq, abc_2x2)
         print('topo entropy', topo_ent / np.log(2))
