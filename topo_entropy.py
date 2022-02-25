@@ -3,9 +3,9 @@ from collections import defaultdict
 
 import numpy as np
 from qiskit import transpile
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
-from toric_code import ToricCode
+from toric_code import  get_toric_code
 
 
 def hamming_distance(s1, s2):
@@ -22,8 +22,9 @@ def purity_single_realization(counts):
         for s2 in counts:
             factor = (-2) ** (-hamming_distance(s1, s2))
             p2 = counts[s2] / N
-            pur += factor * p1 * p2  # TODO unbias?
-            # print(s1,s2,factor, p1,p2, factor * p1 * p2 ,pur)
+            pur += factor * p1 * (N*p2-1)/(N-1)  # TODO unbias?
+    #         if q_cnt==4:
+    #             print(s1,s2,factor, p1,p2, factor * p1 * p2, pur, np.log(pur)/np.log(2))
     # print(len(counts), N, q_cnt, np.log(pur)/np.log(2), -q_cnt-np.log(pur)/np.log(2))
     # -log(pur) = -qcnt* log(2) - log(pur)
     return 2 ** q_cnt * pur
@@ -58,12 +59,27 @@ def calculate_s_topo(full_counts, subsystems):
     return sum(one) - sum(two) + sum(three)
 
 
-def calculate_topo_entropy_pauli(backend, qubits, subsystems):
+def calculate_topo_entropy_pauli(backend, size, qubits, subsystems):
+    x,y=size
     all_counts = []
     all_gates = [''.join(x) for x in itertools.product('xyz', repeat=len(qubits))]
     for gates in tqdm(all_gates):
-        tc = ToricCode(3, 5, len(qubits))
+        tc = get_toric_code(x,y, len(qubits))
         tc.measure_pauli(qubits, gates)
+
+        job = backend.run(transpile(tc.circ, backend), shots=1024)
+        result = job.result()
+        counts = result.get_counts(tc.circ)
+        all_counts.append(counts)
+    return calculate_s_topo(all_counts, subsystems)
+
+
+def calculate_topo_entropy_haar(backend, size, qubits, subsystems):
+    x,y=size
+    all_counts = []
+    for _ in trange(100):
+        tc = get_toric_code(x,y, len(qubits))
+        tc.measure_haar(qubits)
 
         job = backend.run(transpile(tc.circ, backend), shots=1024)
         result = job.result()
