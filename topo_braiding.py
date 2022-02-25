@@ -1,8 +1,8 @@
 import numpy as np
 from qiskit import transpile
-from qiskit.circuit.library import MCXGate
 
 from toric_code import get_toric_code
+from toric_code_matching import is_inside_matching
 
 sz = np.array([[1, 0], [0, -1]])
 sx = np.array([[0, 1], [1, 0]])
@@ -26,21 +26,46 @@ def apply_cxxxx_on_square(tc, upper_corner):
         locs = [(x, y), (x + 1, y), (x + 2, y), (x + 1, y + 1)]
     else:
         locs = [(x, y), (x + 1, y - 1), (x + 2, y), (x + 1, y)]
+
+    if not all([is_inside_matching((tc.x, tc.y), l) for l in locs]):
+        return
     tc.circ.mct(control_qubits=[tc.ancillas[0]], target_qubit=[tc.regs[l[0]][l[1]] for l in locs])
 
 
-def apply_cxxyyzz_on_square(tc, upper_corner):
-    # cXXXX = np.kron(np.array([[1, 0], [0, 0]]), np.kron(sx, np.kron(sx, np.kron(sx, sx)))) + \
-    #         np.kron(np.array([[0, 0], [0, 1]]), np.kron(s0, np.kron(s0, np.kron(s0, s0))))
-
+def apply_czzz_on_square(tc, upper_corner):
+    cZZZZ = np.kron(np.array([[1, 0], [0, 0]]), np.kron(sz, np.kron(sz, np.kron(sz, sz)))) + \
+            np.kron(np.array([[0, 0], [0, 1]]), np.kron(s0, np.kron(s0, np.kron(s0, s0))))
     x, y = upper_corner
     if x % 2 == 0:
         locs = [(x, y), (x + 1, y), (x + 2, y), (x + 1, y + 1)]
     else:
         locs = [(x, y), (x + 1, y - 1), (x + 2, y), (x + 1, y)]
 
-    tc.circ.mct(control_qubits=[tc.ancillas[0]], target_qubit=[tc.regs[l[0]][l[1]] for l in locs])
-    # tc.circ.unitary(cXXXX, [tc.regs[l[0]][l[1]] for l in locs] + [tc.ancillas[0]])
+    if not all([is_inside_matching((tc.x, tc.y), l) for l in locs]):
+        return
+
+    tc.circ.unitary(cZZZZ, [tc.regs[l[0]][l[1]] for l in locs] + [tc.ancillas[0]])
+
+
+def apply_cxxyyzz_on_rectangle(tc, upper_corner, left=True):
+    cXXYYZZ = np.kron(np.array([[1, 0], [0, 0]]), np.kron(sx, np.kron(sx, np.kron(sy, np.kron(sy, np.kron(sz, sz)))))) + \
+              np.kron(np.array([[0, 0], [0, 1]]), np.kron(s0, np.kron(s0, np.kron(s0, np.kron(s0, np.kron(s0, s0))))))
+
+    x, y = upper_corner
+    if left:
+        if x % 2 == 0:
+            locs = [(x, y), (x + 1, y + 1), (x + 1, y), (x + 2, y), (x + 2, y - 1), (x + 3, y)]
+        else:
+            locs = [(x, y), (x + 1, y), (x + 1, y - 1), (x + 2, y), (x + 1, y - 1), (x + 2, y - 1)]
+    else:
+        if x % 2 == 0:
+            locs = [(x, y), (x + 1, y), (x + 1, y + 1), (x + 2, y), (x + 2, y + 1), (x + 3, y + 1)]
+        else:
+            locs = [(x, y), (x + 1, y - 1), (x + 1, y), (x + 2, y), (x + 2, y + 1), (x + 3, y)]
+
+    if not all([is_inside_matching((tc.x, tc.y), l) for l in locs]):
+        return
+    tc.circ.unitary(cXXYYZZ, [tc.regs[l[0]][l[1]] for l in locs[::-1]] + [tc.ancillas[0]])
 
 
 def em_braiding_phase(backend, x, y):

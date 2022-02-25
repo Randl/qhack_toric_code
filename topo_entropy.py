@@ -10,7 +10,7 @@ from toric_code_matching import is_inside_matching, is_corner_matching
 
 ABC_DIVISION_2x2 = [(0, 1), (2,), (3,)]
 ABC_DIVISION_2x3_RIGHT = [(1, 3), (0, 2), (4, 5)]
-ABC_DIVISION_2x3_LEFT = [(2, 4), (0, 1),  (3, 5)]
+ABC_DIVISION_2x3_LEFT = [(2, 4), (0, 1), (3, 5)]
 ABC_DIVISION_3x3 = [(0, 1, 3), (2, 5, 7), (4, 6, 8)]
 
 
@@ -122,6 +122,8 @@ def get_all_2x3_left_non_corner(size):
                     [is_corner_matching(size, s) for s in sys_l]):
                 all_sys.append(sys_l)
     return all_sys
+
+
 def get_all_2x3_right_non_corner(size):
     x, y = size
     all_sys = []
@@ -135,6 +137,8 @@ def get_all_2x3_right_non_corner(size):
                     [is_corner_matching(size, s) for s in sys_r]):
                 all_sys.append(sys_r)
     return all_sys
+
+
 def get_all_2x3_non_corner(size):
     return get_all_2x3_left_non_corner(size) + get_all_2x3_right_non_corner(size)
 
@@ -147,8 +151,7 @@ def get_all_3x3_non_corner(size):
             if rx % 2 == 0:
                 sys = [(-1, -1)]  # skip, why
             else:
-                sys = (rx, ry), (rx + 1, ry - 1), (rx + 1, ry), (rx + 2, ry - 1), (rx + 2, ry), (rx + 2, ry + 1), (
-                rx + 3, ry - 1), (rx + 3, ry), (rx + 4, ry),
+                sys = (rx, ry), (rx + 1, ry - 1), (rx + 1, ry), (rx + 2, ry - 1), (rx + 2, ry), (rx + 2, ry + 1), (rx + 3, ry - 1), (rx + 3, ry), (rx + 4, ry),
             if all([is_inside_matching(size, s) for s in sys]) and not any([is_corner_matching(size, s) for s in sys]):
                 all_sys.append(sys)
     return all_sys

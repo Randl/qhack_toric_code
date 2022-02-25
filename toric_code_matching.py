@@ -83,10 +83,9 @@ class ToricCodeMatching:
         self.star_x, self.star_y = self.x, self.y // 2 + 1
         # print(self.plaquette_x, self.plaquette_y)
         self.regs = [QuantumRegister(self.x - 1, f'l{lev}') if lev % 2 == 0 else QuantumRegister(self.x, f'l{lev}')
-                     for
-                     lev in range(self.y)]  # first coordinate is row index, second is column index
+                     for lev in range(self.y)]  # first coordinate is row index, second is column index
         self.c_reg = ClassicalRegister(classical_bit_count)
-        if ancillas_count>0:
+        if ancillas_count > 0:
             self.ancillas = QuantumRegister(ancillas_count)
             self.circ = QuantumCircuit(*self.regs, self.ancillas, self.c_reg)
         else:
