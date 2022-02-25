@@ -84,7 +84,8 @@ class TestMatchingEntropy(unittest.TestCase):
         for qubits in get_all_2x3_left_non_corner((x, y)):
             test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_LEFT, expected_values, type='haar', cnt=100)
         for qubits in get_all_2x3_right_non_corner((x, y)):
-            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_RIGHT, expected_values, type='haar', cnt=100)
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_RIGHT, expected_values, type='haar',
+                              cnt=100)
 
 
 if __name__ == '__main__':

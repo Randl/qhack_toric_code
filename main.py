@@ -1,22 +1,14 @@
 import numpy as np
 from qiskit import Aer
 
+from topo_braiding import em_braiding_phase
 from topo_entropy import calculate_topo_entropy_pauli, calculate_topo_entropy_haar
 from toric_code import get_toric_code
 from toric_code_matching import get_plaquette_matching
-from topo_braiding import em_braiding_phase
 
 tc = get_toric_code(9, 13)
 print(tc.circ.num_qubits, tc.circ.depth())
 print(tc.plaquette_x, tc.plaquette_y)
-
-
-
-
-
-
-
-
 
 x, y = 5, 5
 tc = get_toric_code(x, y)
@@ -26,11 +18,9 @@ px, py = tc.plaquette_x, tc.plaquette_y
 
 backend_sim = Aer.get_backend('qasm_simulator')
 
-
 theta_em, err_theta_em = em_braiding_phase(backend_sim, x, y)
 
 print('theta_em = {:.3f} +/- {:.3f}'.format(theta_em, err_theta_em))
-
 
 abc_2x2 = [(0, 1), (2,), (3,)]
 for i in range(px):
@@ -43,5 +33,3 @@ for i in range(px):
         print('topo entropy', topo_ent / np.log(2))
         topo_ent = calculate_topo_entropy_haar(backend_sim, (x, y), plaq, abc_2x2)
         print('topo entropy', topo_ent / np.log(2))
-
-
