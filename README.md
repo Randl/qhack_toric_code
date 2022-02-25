@@ -4,6 +4,8 @@ This repo contains reimplementaton of the paper
 "[Realizing topologically ordered states on a quantum processor](https://arxiv.org/abs/2104.01180)" by Satzinger et al.
 in Qiskit.
 
+The systems of size up to 5x7 (31 qubit+ancilla) can be simulated on the classical computers,
+reproducing the results of the 
 ## GS preparation
 ### Matching boundary conditions
 For matching boundary condition, boundary plaquettes are all of the same type and the ground state is unique.
