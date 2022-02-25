@@ -9,7 +9,8 @@ from toric_code import get_toric_code
 from toric_code_matching import is_inside_matching, is_corner_matching
 
 ABC_DIVISION_2x2 = [(0, 1), (2,), (3,)]
-ABC_DIVISION_2x3 = [(1, 3), (0, 2), (4, 5)]
+ABC_DIVISION_2x3_RIGHT = [(1, 3), (0, 2), (4, 5)]
+ABC_DIVISION_2x3_LEFT = [(2, 4), (0, 1),  (3, 5)]
 ABC_DIVISION_3x3 = [(0, 1, 3), (2, 5, 7), (4, 6, 8)]
 
 
@@ -37,10 +38,11 @@ def purity_single_realization(counts):
 
 def second_renyi_entropy(all_counts):
     # all_counts is list of dictionaries {s: count}
-    return -np.log(sum([purity_single_realization(counts) for counts in all_counts]) / len(all_counts))
+    return -np.log(sum([purity_single_realization(counts) for counts in tqdm(all_counts)]) / len(all_counts))
 
 
 def get_subsystem_counts(full_counts, sub_idx):
+    print(sub_idx)
     all_subsystem_counts = []
     for counts in full_counts:
         subsystem_counts = defaultdict(lambda: 0)
@@ -58,6 +60,8 @@ def subsystem_sre(full_counts, sub_idx):
 def calculate_s_subsystems(full_counts, subsystems):
     one = [subsystem_sre(full_counts, sub_idx) for sub_idx in subsystems]
     two_subsystems = [subsystems[0] + subsystems[1], subsystems[0] + subsystems[2], subsystems[1] + subsystems[2]]
+    print(subsystems)
+    print(two_subsystems)
     two = [subsystem_sre(full_counts, sub_idx) for sub_idx in two_subsystems]
     three = [second_renyi_entropy(full_counts)]
     return one, two, three
@@ -112,24 +116,34 @@ def get_all_2x2_non_corner(size):
     return all_sys
 
 
-def get_all_2x3_non_corner(size):
+def get_all_2x3_left_non_corner(size):
     x, y = size
     all_sys = []
     for rx in range(x):
         for ry in range(y):
             if rx % 2 == 0:
                 sys_l = (rx, ry), (rx + 1, ry), (rx + 1, ry + 1), (rx + 2, ry), (rx + 2, ry + 1), (rx + 3, ry + 1)
-                sys_r = (rx, ry), (rx + 1, ry), (rx + 1, ry + 1), (rx + 2, ry - 1), (rx + 2, ry), (rx + 3, ry)
             else:
                 sys_l = (rx, ry), (rx + 1, ry - 1), (rx + 1, ry), (rx + 2, ry), (rx + 2, ry + 1), (rx + 3, ry)
-                sys_r = (rx, ry), (rx + 1, ry - 1), (rx + 1, ry), (rx + 2, ry - 1), (rx + 2, ry), (rx + 3, ry - 1)
             if all([is_inside_matching(size, s) for s in sys_l]) and not any(
                     [is_corner_matching(size, s) for s in sys_l]):
                 all_sys.append(sys_l)
+    return all_sys
+def get_all_2x3_right_non_corner(size):
+    x, y = size
+    all_sys = []
+    for rx in range(x):
+        for ry in range(y):
+            if rx % 2 == 0:
+                sys_r = (rx, ry), (rx + 1, ry), (rx + 1, ry + 1), (rx + 2, ry - 1), (rx + 2, ry), (rx + 3, ry)
+            else:
+                sys_r = (rx, ry), (rx + 1, ry - 1), (rx + 1, ry), (rx + 2, ry - 1), (rx + 2, ry), (rx + 3, ry - 1)
             if all([is_inside_matching(size, s) for s in sys_r]) and not any(
                     [is_corner_matching(size, s) for s in sys_r]):
                 all_sys.append(sys_r)
     return all_sys
+def get_all_2x3_non_corner(size):
+    return get_all_2x3_left_non_corner(size) + get_all_2x3_right_non_corner(size)
 
 
 def get_all_3x3_non_corner(size):

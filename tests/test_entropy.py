@@ -6,15 +6,16 @@ from qiskit import Aer
 from qiskit import transpile
 from tqdm import tqdm
 
-from topo_entropy import ABC_DIVISION_2x2, ABC_DIVISION_2x3, ABC_DIVISION_3x3
+from topo_entropy import ABC_DIVISION_2x2, ABC_DIVISION_2x3_LEFT, ABC_DIVISION_2x3_RIGHT
 from topo_entropy import calculate_s_subsystems
 from topo_entropy import get_all_2x2_non_corner, get_all_2x3_non_corner, get_all_3x3_non_corner
+from topo_entropy import get_all_2x3_left_non_corner, get_all_2x3_right_non_corner
 from toric_code import get_toric_code
 
 
-def test_topo_entropy(backend, size, qubits, subsystems, expected_values, type='haar', cnt=1000):
+def test_topo_entropy(backend, size, qubits, subsystems, expected_values, type='haar', cnt=1000, rtol=0.05):
     assert type in ('haar', 'pauli')
-
+    print(qubits)
     x, y = size
     all_counts = []
     if type == 'haar':
@@ -34,9 +35,11 @@ def test_topo_entropy(backend, size, qubits, subsystems, expected_values, type='
         counts = result.get_counts(tc.circ)
         all_counts.append(counts)
     calculated_values = calculate_s_subsystems(all_counts, subsystems)
+    print(expected_values, [c / np.log(2) for calc in calculated_values for c in calc])
     for expect, calc in zip(expected_values, calculated_values):
         for ve, vc in zip(expect, calc):
-            np.testing.assert_allclose(ve, vc / np.log(2), rtol=0.04, atol=0.5)
+            continue
+            np.testing.assert_allclose(vc / np.log(2), ve, rtol=rtol, atol=0.)
     return
 
 
@@ -52,15 +55,36 @@ class TestMatchingEntropy(unittest.TestCase):
         backend_sim = Aer.get_backend('aer_simulator')
         x, y = 5, 7
         for qubits in get_all_2x2_non_corner((x, y)):
-            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='pauli')
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='pauli', rtol=0.06)
+
+    def test_2x2_entropy_haar(self):
+        expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
+
+        backend_sim = Aer.get_backend('aer_simulator')
+        x, y = 5, 7
+        for qubits in get_all_2x2_non_corner((x, y)):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='haar', cnt=100,
+                              rtol=0.05)
 
     def test_2x3_entropy_pauli(self):
         expected_values = [(2., 2., 2.), (4., 4., 3.), (4.,)]
 
         backend_sim = Aer.get_backend('aer_simulator')
         x, y = 5, 7
-        for qubits in get_all_2x3_non_corner((x, y)):
-            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3, expected_values, type='pauli')
+        for qubits in get_all_2x3_left_non_corner((x, y)):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_LEFT, expected_values, type='pauli')
+        for qubits in get_all_2x3_right_non_corner((x, y)):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_RIGHT, expected_values, type='pauli')
+
+    def test_2x3_entropy_haar(self):
+        expected_values = [(2., 2., 2.), (4., 4., 3.), (4.,)]
+
+        backend_sim = Aer.get_backend('aer_simulator')
+        x, y = 5, 7
+        for qubits in get_all_2x3_left_non_corner((x, y)):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_LEFT, expected_values, type='haar', cnt=100)
+        for qubits in get_all_2x3_right_non_corner((x, y)):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3_RIGHT, expected_values, type='haar', cnt=100)
 
 
 if __name__ == '__main__':
