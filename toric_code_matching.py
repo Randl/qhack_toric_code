@@ -48,6 +48,28 @@ class sin_prob_dist(rv_continuous):
         return 0.5 * np.sin(theta)
 
 
+def is_inside_matching(size, coo):
+    x, y = size
+    j, i = coo
+    if j < 0 or j >= y:
+        return False
+    if j % 2 == 0:
+        return i < x - 1
+    return i < x
+
+
+def is_corner_matching(size, coo):
+    x, y = size
+    j, i = coo
+    if j == 0 or j == y - 1:
+        if i == 0 or i == x - 2:
+            return True
+    if j == 1 or j == y - 2:
+        if i == 0 or i == x - 1:
+            return True
+    return False
+
+
 class ToricCodeMatching:
     def __init__(self, x, y, classical_bit_count=4):
         """
