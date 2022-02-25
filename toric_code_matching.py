@@ -154,9 +154,10 @@ class ToricCodeMatching:
         self.circ.barrier()
         for (x, y), gate in zip(qubits, gates):
             if gate == 'x':
-                self.circ.x(self.regs[x][y])
+                self.circ.h(self.regs[x][y])
             if gate == 'y':
-                self.circ.y(self.regs[x][y])
+                self.circ.sdg(self.regs[x][y])
+                self.circ.h(self.regs[x][y])
             if gate == 'z':
-                self.circ.z(self.regs[x][y])
+                pass
         self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(len(qubits)))
