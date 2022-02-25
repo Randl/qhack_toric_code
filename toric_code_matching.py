@@ -71,7 +71,7 @@ def is_corner_matching(size, coo):
 
 
 class ToricCodeMatching:
-    def __init__(self, x, y, ancillas_count=0, classical_bit_count=4):
+    def __init__(self, x, y, classical_bit_count=4, ancillas_count=0):
         """
 
         :param x: Column count. In case of matching boundary condition even rows has one less qubit
