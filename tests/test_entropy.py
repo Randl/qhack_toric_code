@@ -6,7 +6,7 @@ from qiskit import Aer
 from qiskit import transpile
 from tqdm import tqdm
 
-from topo_entropy import ABC_DIVISION_2x2
+from topo_entropy import ABC_DIVISION_2x2, ABC_DIVISION_2x3, ABC_DIVISION_3x3
 from topo_entropy import calculate_s_subsystems
 from topo_entropy import get_all_2x2_non_corner, get_all_2x3_non_corner, get_all_3x3_non_corner
 from toric_code import get_toric_code
@@ -53,6 +53,14 @@ class TestMatchingEntropy(unittest.TestCase):
         x, y = 5, 7
         for qubits in get_all_2x2_non_corner((x, y)):
             test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='pauli')
+
+    def test_2x3_entropy_pauli(self):
+        expected_values = [(2., 2., 2.), (4., 4., 3.), (4.,)]
+
+        backend_sim = Aer.get_backend('aer_simulator')
+        x, y = 5, 7
+        for qubits in get_all_2x3_non_corner((x, y)):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x3, expected_values, type='pauli')
 
 
 if __name__ == '__main__':
