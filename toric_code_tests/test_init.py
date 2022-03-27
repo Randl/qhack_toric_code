@@ -1,10 +1,10 @@
 import unittest
 
 import numpy as np
-from qiskit import Aer
 from qiskit import transpile
 
-from toric_code import get_toric_code
+from backends import get_clean_backend, get_noisy_backend
+from toric_code import get_toric_code, calibrate_readout, fix_measurements
 from toric_code_matching import get_star_matching
 
 
@@ -19,25 +19,28 @@ def count_to_parity(counts):
     return parity
 
 
-def get_plaquette_ev(backend, size, plaquette_index):
+def get_plaquette_ev(backend, size, plaquette_index, run_kwargs=None, meas_fitter=None):
     x, y = size
     px, py = plaquette_index
     tc = get_toric_code(x, y)
 
     tc.measure_plaquette(py, px)
-    job = backend.run(transpile(tc.circ, backend), shots=1024)
+    job = backend.run(transpile(tc.circ, backend), shots=1024, **run_kwargs)
     result = job.result()
-    counts = result.get_counts(tc.circ)
+    if meas_fitter is not None:
+        counts = fix_measurements(meas_fitter, result)
+    else:
+        counts = result.get_counts(tc.circ)
     return count_to_parity(counts)
 
 
-def get_star_ev(backend, size, star_index):
+def get_star_ev(backend, size, star_index, run_kwargs=None):
     x, y = size
     sx, sy = star_index
     tc = get_toric_code(x, y)
 
     tc.measure_star(sx, sy)
-    job = backend.run(transpile(tc.circ, backend), shots=1024)
+    job = backend.run(transpile(tc.circ, backend), shots=1024, **run_kwargs)
     result = job.result()
     counts = result.get_counts(tc.circ)
     return count_to_parity(counts)
@@ -50,10 +53,11 @@ class TestMatchingInit(unittest.TestCase):
         px, py = tc.plaquette_x, tc.plaquette_y
 
         # Use Aer's simulator
-        backend_sim = Aer.get_backend('aer_simulator')
+        backend_sim, noise_model, coupling_map, basis_gates = get_clean_backend()
+        run_kwargs = {'noise_model': noise_model, 'coupling_map': coupling_map, 'basis_gates': basis_gates}
         for i in range(px):
             for j in range(py):
-                ev = get_plaquette_ev(backend_sim, (x, y), (i, j))
+                ev = get_plaquette_ev(backend_sim, (x, y), (i, j), run_kwargs, None)
                 np.testing.assert_allclose(ev, 1)
 
     def test_stars(self):
@@ -62,14 +66,15 @@ class TestMatchingInit(unittest.TestCase):
         sx, sy = tc.star_x, tc.star_y
 
         # Use Aer's simulator
-        backend_sim = Aer.get_backend('aer_simulator')
+        backend_sim, noise_model, coupling_map, basis_gates = get_clean_backend()
+        run_kwargs = {'noise_model': noise_model, 'coupling_map': coupling_map, 'basis_gates': basis_gates}
 
         for i in range(sx):
             for j in range(sy):
                 if len(get_star_matching(i, j, tc.y, tc.x)) < 4:
                     continue
 
-                ev = get_star_ev(backend_sim, (x, y), (i, j))
+                ev = get_star_ev(backend_sim, (x, y), (i, j), run_kwargs)
                 np.testing.assert_allclose(ev, 1)
 
 
