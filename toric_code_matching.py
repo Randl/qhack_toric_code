@@ -36,9 +36,9 @@ def get_star_matching(x, y, size_x, size_y):
     if top_x > 0:
         res.append((top_x, top_y))
     if right_y < size_y:
-        res.append((bott_x, bott_y))
+        res.append((left_x, left_y))
     if left_y > 0:
-        res.append((top_x, top_y))
+        res.append((right_x, right_y))
     return res
 
 
@@ -100,6 +100,7 @@ class ToricCodeMatching:
 
         self.plaquette_reprs_cols = [[rep for rep in plaquette_reprs_all if rep[1] == i] for i in range(self.x - 1)]
         self.init_matching()
+        self.measured_qubits = None
 
     def init_matching(self):
         order = []
@@ -151,8 +152,9 @@ class ToricCodeMatching:
         qubits = get_plaquette_matching(x, y)
         self.circ.barrier()
         # measure in x basis
-        self.circ.h([self.regs[q[0]][q[1]] for q in qubits])
-        self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(4))
+        self.measured_qubits = [self.regs[q[0]][q[1]] for q in qubits]
+        self.circ.h(self.measured_qubits)
+        self.circ.measure(self.measured_qubits, range(4))
         # print(self.circ)
 
     def measure_star(self, x, y):
@@ -160,7 +162,8 @@ class ToricCodeMatching:
         if len(qubits) < 4:
             return
         self.circ.barrier()
-        self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(4))
+        self.measured_qubits = [self.regs[q[0]][q[1]] for q in qubits]
+        self.circ.measure(self.measured_qubits, range(4))
         # print(self.circ)
 
     def measure_haar(self, qubits):
