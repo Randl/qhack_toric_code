@@ -19,7 +19,7 @@ def count_to_parity(counts):
     return parity
 
 
-def get_plaquette_ev(backend, size, plaquette_index, run_kwargs=None, meas_fitter=None):
+def get_plaquette_ev(backend, size, plaquette_index, run_kwargs=None, calibrate=False):
     x, y = size
     px, py = plaquette_index
     tc = get_toric_code(x, y)
