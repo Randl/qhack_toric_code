@@ -4,6 +4,7 @@ import numpy as np
 from qiskit import Aer
 from qiskit import transpile
 
+from backends import run_job
 from topo_braiding import create_e_particles, create_m_particles, apply_cxxxx_on_square, apply_cxxyyzz_on_rectangle
 from toric_code import get_toric_code
 
@@ -26,10 +27,10 @@ class TestBraiding(unittest.TestCase):
             tc.circ.h(tc.ancillas[0])
 
             tc.circ.measure(tc.ancillas[0], 0)
+
             Nshots = 10000
-            job = backend.run(transpile(tc.circ, backend), shots=Nshots)
-            result = job.result()
-            counts = result.get_counts(tc.circ)
+            _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
+                                calibrate=False, measured_qubits=tc.measured_qubits)
 
             if '0' not in counts:
                 counts['0'] = 0
@@ -63,9 +64,8 @@ class TestBraiding(unittest.TestCase):
 
         tc.circ.measure(tc.ancillas[0], 0)
         Nshots = 10000
-        job = backend.run(transpile(tc.circ, backend), shots=Nshots)
-        result = job.result()
-        counts = result.get_counts(tc.circ)
+        _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
+                                calibrate=False, measured_qubits=tc.measured_qubits)
 
         if '0' not in counts:
             counts['0'] = 0
@@ -97,9 +97,8 @@ class TestBraiding(unittest.TestCase):
 
         tc.circ.measure(tc.ancillas[0], 0)
         Nshots = 10000
-        job = backend.run(transpile(tc.circ, backend), shots=Nshots)
-        result = job.result()
-        counts = result.get_counts(tc.circ)
+        _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
+                                calibrate=False, measured_qubits=tc.measured_qubits)
 
         if '0' not in counts:
             counts['0'] = 0
@@ -126,9 +125,8 @@ class TestBraiding(unittest.TestCase):
 
             tc.circ.measure(tc.ancillas[0], 0)
             Nshots = 10000
-            job = backend.run(transpile(tc.circ, backend), shots=Nshots)
-            result = job.result()
-            counts = result.get_counts(tc.circ)
+            _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
+                                calibrate=False, measured_qubits=tc.measured_qubits)
 
             if '0' not in counts:
                 counts['0'] = 0

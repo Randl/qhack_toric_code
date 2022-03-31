@@ -176,7 +176,8 @@ class ToricCodeMatching:
             phi, lam = 2 * np.pi * np.random.uniform(size=2)  # Sample phi and omega as normal
             theta = sin_sampler.rvs(size=1)[0]  # Sample theta from our new distribution
             self.circ.u(theta, phi, lam, self.regs[x][y])
-        self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(len(qubits)))
+        self.measured_qubits = [self.regs[q[0]][q[1]] for q in qubits]
+        self.circ.measure(self.measured_qubits, range(len(qubits)))
 
     def measure_pauli(self, qubits, gates):
         self.circ.barrier()
@@ -188,4 +189,5 @@ class ToricCodeMatching:
                 self.circ.h(self.regs[x][y])
             if gate == 'z':
                 pass
-        self.circ.measure([self.regs[q[0]][q[1]] for q in qubits], range(len(qubits)))
+        self.measured_qubits = [self.regs[q[0]][q[1]] for q in qubits]
+        self.circ.measure(self.measured_qubits, range(len(qubits)))

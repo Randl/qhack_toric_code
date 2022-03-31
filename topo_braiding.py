@@ -1,6 +1,7 @@
 import numpy as np
 from qiskit import transpile
 
+from backends import run_job
 from toric_code import get_toric_code
 from toric_code_matching import is_inside_matching
 
@@ -84,10 +85,8 @@ def em_braiding_phase(backend, x, y):
 
     tc.circ.measure(tc.ancillas[0], 0)
     Nshots = 10000
-    job = backend.run(transpile(tc.circ, backend), shots=Nshots)
-    result = job.result()
-    counts = result.get_counts(tc.circ)
-
+    _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
+                            calibrate=False, measured_qubits=tc.measured_qubits)
     if '0' not in counts:
         counts['0'] = 0
     if '1' not in counts:

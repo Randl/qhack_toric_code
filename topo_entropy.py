@@ -5,6 +5,7 @@ import numpy as np
 from qiskit import transpile
 from tqdm import tqdm, trange
 
+from backends import run_job
 from toric_code import get_toric_code
 from toric_code_matching import is_inside_matching, is_corner_matching
 
@@ -34,7 +35,7 @@ def purity_single_realization(counts):
 
 def second_renyi_entropy(all_counts):
     # all_counts is list of dictionaries {s: count}
-    return -np.log(sum([purity_single_realization(counts) for counts in tqdm(all_counts)]) / len(all_counts))
+    return -np.log(sum([purity_single_realization(counts) for counts in all_counts]) / len(all_counts))
 
 
 def get_subsystem_counts(full_counts, sub_idx):
@@ -74,9 +75,8 @@ def calculate_topo_entropy_pauli(backend, size, qubits, subsystems):
         tc = get_toric_code(x, y, len(qubits))
         tc.measure_pauli(qubits, gates)
 
-        job = backend.run(transpile(tc.circ, backend), shots=1024)
-        result = job.result()
-        counts = result.get_counts(tc.circ)
+        _, counts = run_job(tc.circ, backend, shots=1024, run_kwargs={},
+                            calibrate=False, measured_qubits=tc.measured_qubits)
         all_counts.append(counts)
     return calculate_s_topo(all_counts, subsystems)
 
@@ -88,9 +88,8 @@ def calculate_topo_entropy_haar(backend, size, qubits, subsystems):
         tc = get_toric_code(x, y, len(qubits))
         tc.measure_haar(qubits)
 
-        job = backend.run(transpile(tc.circ, backend), shots=1024)
-        result = job.result()
-        counts = result.get_counts(tc.circ)
+        _, counts = run_job(tc.circ, backend, shots=1024, run_kwargs={},
+                            calibrate=False, measured_qubits=tc.measured_qubits)
         all_counts.append(counts)
     return calculate_s_topo(all_counts, subsystems)
 

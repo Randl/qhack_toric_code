@@ -1,10 +1,11 @@
 from qiskit import Aer, IBMQ
-from qiskit.providers.aer import AerSimulator
-
+from qiskit import transpile
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.aer.noise.errors import pauli_error
 from qiskit.test.mock import FakeArmonk, FakeBelem, FakeBogota, FakeBrooklyn, FakeGuadalupe, FakeJakarta, FakeLagos, \
-    FakeLima, FakeManila, FakeMontreal, FakeMumbai, FakeMumbaiV2, FakeQuito, FakeSantiago, FakeToronto
+    FakeLima, FakeManila, FakeMontreal, FakeMumbai, FakeQuito, FakeSantiago, FakeToronto
+
+from toric_code import calibrate_readout, fix_measurements
 
 
 def get_noise(p):
@@ -67,9 +68,30 @@ def get_ibm_mock_backend(backend_name='ibmq_mumbai'):
                        'ibmq_quito': FakeQuito,
                        'ibmq_santiago': FakeSantiago,
                        'ibmq_toronto': FakeToronto}
-    backend = name_to_backend[backend_name]()
-    return AerSimulator.from_backend(backend), {}
+    device = name_to_backend[backend_name]()
+    noise_model = NoiseModel.from_backend(device)
+    conf = device.configuration()
+    kwargs = {
+        "noise_model": noise_model,
+        "coupling_map": conf.coupling_map,
+        "basis_gates": conf.basis_gates,
+    }
+    return Aer.get_backend('aer_simulator'), kwargs
 
 
 def get_noisy_backend(p):
     return Aer.get_backend('aer_simulator'), {'noise_model': get_noise(p)}
+
+
+def run_job(circ, backend, shots, run_kwargs=None, calibrate=False, measured_qubits=None):
+    #TODO: multiple circuits in single job
+    if run_kwargs is None:
+        run_kwargs={}
+    job = backend.run(transpile(circ, backend), shots=shots, **run_kwargs)
+    result = job.result()
+    if calibrate:
+        meas_fitter = calibrate_readout(measured_qubits, backend, run_kwargs)
+        counts = fix_measurements(meas_fitter, result)
+    else:
+        counts = result.get_counts(circ)
+    return result,counts
