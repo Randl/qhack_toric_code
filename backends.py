@@ -14,13 +14,17 @@ def get_noise(p):
 
 
 def get_clean_backend():
-    return Aer.get_backend('aer_simulator'), None, None, None
+    return Aer.get_backend('aer_simulator'), {}
 
 
-def get_ibm_sim_backend():
+def get_ibm_sim_backend(backend_name='ibmq_manila', hub=None, group=None, project=None):
     # Build noise model from backend properties
-    provider = IBMQ.load_account()
-    backend = provider.get_backend('ibmq_vigo')
+    if hub is not None:
+        IBMQ.load_account()
+        provider = IBMQ.get_provider(hub=hub, group=group, project=project)
+    else:
+        provider = IBMQ.load_account()
+    backend = provider.get_backend(backend_name)
     noise_model = NoiseModel.from_backend(backend)
 
     # Get coupling map from backend
@@ -29,8 +33,21 @@ def get_ibm_sim_backend():
     # Get basis gates from noise model
     basis_gates = noise_model.basis_gates
 
-    return Aer.get_backend('aer_simulator'), noise_model, coupling_map, basis_gates
+    return Aer.get_backend('aer_simulator'), {'noise_model': noise_model, 'coupling_map': coupling_map,
+                                              'basis_gates': basis_gates}
+
+
+def get_ibm_backend(backend_name='ibmq_manila', hub=None, group=None, project=None):
+    # Build noise model from backend properties
+    if hub is not None:
+        IBMQ.load_account()
+        provider = IBMQ.get_provider(hub=hub, group=group, project=project)
+    else:
+        provider = IBMQ.load_account()
+    backend = provider.get_backend(backend_name)
+
+    return backend, {}
 
 
 def get_noisy_backend(p):
-    return Aer.get_backend('aer_simulator'), get_noise(p), None, None
+    return Aer.get_backend('aer_simulator'), {'noise_model': get_noise(p)}

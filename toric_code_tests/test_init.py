@@ -60,8 +60,7 @@ class TestMatchingInit(unittest.TestCase):
         px, py = tc.plaquette_x, tc.plaquette_y
 
         # Use Aer's simulator
-        backend_sim, noise_model, coupling_map, basis_gates = get_clean_backend()
-        run_kwargs = {'noise_model': noise_model, 'coupling_map': coupling_map, 'basis_gates': basis_gates}
+        backend_sim, run_kwargs = get_clean_backend()
         for i in range(px):
             for j in range(py):
                 ev = get_plaquette_ev(backend_sim, (x, y), (i, j), run_kwargs, False)
@@ -73,8 +72,7 @@ class TestMatchingInit(unittest.TestCase):
         px, py = tc.plaquette_x, tc.plaquette_y
 
         # Use Aer's simulator
-        backend_sim, noise_model, coupling_map, basis_gates = get_noisy_backend(0.03)
-        run_kwargs = {'noise_model': noise_model, 'coupling_map': coupling_map, 'basis_gates': basis_gates}
+        backend_sim, run_kwargs = get_noisy_backend(0.03)
         for i in range(px):
             for j in range(py):
                 ev = get_plaquette_ev(backend_sim, (x, y), (i, j), run_kwargs, True)
@@ -86,8 +84,7 @@ class TestMatchingInit(unittest.TestCase):
         sx, sy = tc.star_x, tc.star_y
 
         # Use Aer's simulator
-        backend_sim, noise_model, coupling_map, basis_gates = get_clean_backend()
-        run_kwargs = {'noise_model': noise_model, 'coupling_map': coupling_map, 'basis_gates': basis_gates}
+        backend_sim, run_kwargs = get_clean_backend()
 
         for i in range(sx):
             for j in range(sy):
@@ -103,8 +100,7 @@ class TestMatchingInit(unittest.TestCase):
         sx, sy = tc.star_x, tc.star_y
 
         # Use Aer's simulator
-        backend_sim, noise_model, coupling_map, basis_gates = get_noisy_backend(0.03)
-        run_kwargs = {'noise_model': noise_model, 'coupling_map': coupling_map, 'basis_gates': basis_gates}
+        backend_sim, run_kwargs = get_noisy_backend(0.03)
 
         for i in range(sx):
             for j in range(sy):
