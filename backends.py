@@ -1,7 +1,10 @@
 from qiskit import Aer, IBMQ
+from qiskit.providers.aer import AerSimulator
 
 from qiskit.providers.aer.noise import NoiseModel
 from qiskit.providers.aer.noise.errors import pauli_error
+from qiskit.test.mock import FakeArmonk, FakeBelem, FakeBogota, FakeBrooklyn, FakeGuadalupe, FakeJakarta, FakeLagos, \
+    FakeLima, FakeManila, FakeMontreal, FakeMumbai, FakeMumbaiV2, FakeQuito, FakeSantiago, FakeToronto
 
 
 def get_noise(p):
@@ -47,6 +50,25 @@ def get_ibm_backend(backend_name='ibmq_manila', hub=None, group=None, project=No
     backend = provider.get_backend(backend_name)
 
     return backend, {}
+
+
+def get_ibm_mock_backend(backend_name='ibmq_mumbai'):
+    name_to_backend = {'ibmq_armonk': FakeArmonk,
+                       'ibmq_belem': FakeBelem,
+                       'ibmq_bogota': FakeBogota,
+                       'ibmq_brooklyn': FakeBrooklyn,
+                       'ibmq_guadalupe': FakeGuadalupe,
+                       'ibmq_jakarta': FakeJakarta,
+                       'ibmq_lagos': FakeLagos,
+                       'ibmq_lima': FakeLima,
+                       'ibmq_manila': FakeManila,
+                       'ibmq_montreal': FakeMontreal,
+                       'ibmq_mumbai': FakeMumbai,
+                       'ibmq_quito': FakeQuito,
+                       'ibmq_santiago': FakeSantiago,
+                       'ibmq_toronto': FakeToronto}
+    backend = name_to_backend[backend_name]()
+    return AerSimulator.from_backend(backend), {}
 
 
 def get_noisy_backend(p):
