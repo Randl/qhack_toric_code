@@ -6,7 +6,7 @@ from qiskit import Aer
 from qiskit import transpile
 from tqdm import tqdm
 
-from backends import run_job, get_clean_backend
+from backends import run_job, get_clean_backend, get_noisy_backend, get_ibm_mock_backend
 from topo_entropy import ABC_DIVISION_2x2, ABC_DIVISION_2x3_LEFT, ABC_DIVISION_2x3_RIGHT, ABC_DIVISION_3x3
 from topo_entropy import calculate_s_subsystems
 from topo_entropy import get_all_2x2_non_corner, get_all_2x3_non_corner, get_all_3x3_non_corner
@@ -52,7 +52,7 @@ class TestMatchingEntropy(unittest.TestCase):
         self.assertEqual(20, len(get_all_2x3_non_corner((5, 7))))
         self.assertEqual(3, len(get_all_3x3_non_corner((5, 7))))
 
-    def test_2x2_entropy_pauli(self):
+    def test_2x2_entropy_pauli_clean(self):
         expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
 
         backend_sim, run_kwargs = get_clean_backend()
@@ -63,19 +63,45 @@ class TestMatchingEntropy(unittest.TestCase):
     def test_2x2_entropy_pauli_noisy(self):
         expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
 
-        backend_sim, run_kwargs = get_clean_backend()
+        backend_sim, run_kwargs = get_noisy_backend(0.03)
         x, y = 5, 7
         for qubits in tqdm(get_all_2x2_non_corner((x, y))):
             test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='pauli', rtol=0.01)
 
-    def test_2x2_entropy_haar(self):
+    def test_2x2_entropy_pauli_ibm(self):
+        expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
+
+        backend_sim, run_kwargs = get_ibm_mock_backend('ibmq_mumbai')
+        x, y = 5, 5
+        for qubits in tqdm(get_all_2x2_non_corner((x, y))):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='pauli', rtol=0.01)
+
+    def test_2x2_entropy_haar_clean(self):
+        expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
+
+        backend_sim, run_kwargs = get_noisy_backend(0.03)
+        x, y = 5, 7
+        for qubits in tqdm(get_all_2x2_non_corner((x, y))):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='haar', cnt=250,
+                              rtol=0.075)
+
+    def test_2x2_entropy_haar_noisy(self):
         expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
 
         backend_sim, run_kwargs = get_clean_backend()
         x, y = 5, 7
         for qubits in tqdm(get_all_2x2_non_corner((x, y))):
-            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='haar', cnt=500,
-                              rtol=0.06)
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='haar', cnt=250,
+                              rtol=0.075)
+
+    def test_2x2_entropy_haar_ibm(self):
+        expected_values = [(2., 1., 1.), (3., 3., 2.), (3.,)]
+
+        backend_sim, run_kwargs = get_ibm_mock_backend('ibmq_mumbai')
+        x, y = 5, 5
+        for qubits in tqdm(get_all_2x2_non_corner((x, y))):
+            test_topo_entropy(backend_sim, (x, y), qubits, ABC_DIVISION_2x2, expected_values, type='haar', cnt=250,
+                              rtol=0.075)
 
     def test_2x3_entropy_pauli(self):
         expected_values = [(2., 2., 2.), (4., 3., 4.), (4.,)]
