@@ -29,8 +29,7 @@ class TestBraiding(unittest.TestCase):
             tc.circ.measure(tc.ancillas[0], 0)
 
             Nshots = 10000
-            _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
-                                calibrate=False, measured_qubits=tc.measured_qubits)
+            _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={}, calibrate=False)
 
             if '0' not in counts:
                 counts['0'] = 0
@@ -64,8 +63,7 @@ class TestBraiding(unittest.TestCase):
 
         tc.circ.measure(tc.ancillas[0], 0)
         Nshots = 10000
-        _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
-                                calibrate=False, measured_qubits=tc.measured_qubits)
+        _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={}, measured_qubits=tc.measured_qubits)
 
         if '0' not in counts:
             counts['0'] = 0
@@ -97,8 +95,7 @@ class TestBraiding(unittest.TestCase):
 
         tc.circ.measure(tc.ancillas[0], 0)
         Nshots = 10000
-        _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
-                                calibrate=False, measured_qubits=tc.measured_qubits)
+        _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={}, measured_qubits=tc.measured_qubits)
 
         if '0' not in counts:
             counts['0'] = 0
@@ -125,8 +122,7 @@ class TestBraiding(unittest.TestCase):
 
             tc.circ.measure(tc.ancillas[0], 0)
             Nshots = 10000
-            _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
-                                calibrate=False, measured_qubits=tc.measured_qubits)
+            _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},  calibrate=False)
 
             if '0' not in counts:
                 counts['0'] = 0

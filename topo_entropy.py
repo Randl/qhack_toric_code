@@ -75,8 +75,7 @@ def calculate_topo_entropy_pauli(backend, size, qubits, subsystems):
         tc = get_toric_code(x, y, len(qubits))
         tc.measure_pauli(qubits, gates)
 
-        _, counts = run_job(tc.circ, backend, shots=1024, run_kwargs={},
-                            calibrate=False, measured_qubits=tc.measured_qubits)
+        _, counts = run_job(tc.circ, backend, shots=1024, run_kwargs={}, calibrate=False)
         all_counts.append(counts)
     return calculate_s_topo(all_counts, subsystems)
 
@@ -88,8 +87,7 @@ def calculate_topo_entropy_haar(backend, size, qubits, subsystems):
         tc = get_toric_code(x, y, len(qubits))
         tc.measure_haar(qubits)
 
-        _, counts = run_job(tc.circ, backend, shots=1024, run_kwargs={},
-                            calibrate=False, measured_qubits=tc.measured_qubits)
+        _, counts = run_job(tc.circ, backend, shots=1024, run_kwargs={}, calibrate=False)
         all_counts.append(counts)
     return calculate_s_topo(all_counts, subsystems)
 

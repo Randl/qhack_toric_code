@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 from qiskit import Aer, IBMQ
 from qiskit import transpile
 from qiskit.providers.aer.noise import NoiseModel
@@ -53,21 +55,23 @@ def get_ibm_backend(backend_name='ibmq_manila', hub=None, group=None, project=No
     return backend, {}
 
 
-def get_ibm_mock_backend(backend_name='ibmq_mumbai'):
-    name_to_backend = {'ibmq_armonk': FakeArmonk,
-                       'ibmq_belem': FakeBelem,
-                       'ibmq_bogota': FakeBogota,
-                       'ibmq_brooklyn': FakeBrooklyn,
-                       'ibmq_guadalupe': FakeGuadalupe,
-                       'ibmq_jakarta': FakeJakarta,
-                       'ibmq_lagos': FakeLagos,
-                       'ibmq_lima': FakeLima,
-                       'ibmq_manila': FakeManila,
-                       'ibmq_montreal': FakeMontreal,
-                       'ibmq_mumbai': FakeMumbai,
-                       'ibmq_quito': FakeQuito,
-                       'ibmq_santiago': FakeSantiago,
-                       'ibmq_toronto': FakeToronto}
+name_to_backend = {'ibmq_armonk': FakeArmonk,
+                   'ibmq_belem': FakeBelem,
+                   'ibmq_bogota': FakeBogota,
+                   'ibmq_brooklyn': FakeBrooklyn,
+                   'ibmq_guadalupe': FakeGuadalupe,
+                   'ibmq_jakarta': FakeJakarta,
+                   'ibmq_lagos': FakeLagos,
+                   'ibmq_lima': FakeLima,
+                   'ibmq_manila': FakeManila,
+                   'ibmq_montreal': FakeMontreal,
+                   'ibmq_mumbai': FakeMumbai,
+                   'ibmq_quito': FakeQuito,
+                   'ibmq_santiago': FakeSantiago,
+                   'ibmq_toronto': FakeToronto}
+
+
+def get_ibm_mock_noise_backend(backend_name='ibmq_mumbai'):
     device = name_to_backend[backend_name]()
     noise_model = NoiseModel.from_backend(device)
     conf = device.configuration()
@@ -79,18 +83,51 @@ def get_ibm_mock_backend(backend_name='ibmq_mumbai'):
     return Aer.get_backend('aer_simulator'), kwargs
 
 
+def get_ibm_mock_backend(backend_name='ibmq_mumbai'):
+    device = name_to_backend[backend_name]()
+    return device, {}
+
+
 def get_noisy_backend(p):
     return Aer.get_backend('aer_simulator'), {'noise_model': get_noise(p)}
 
 
-def run_job(circ, backend, shots, run_kwargs=None, calibrate=False, measured_qubits=None):
-    #TODO: multiple circuits in single job
+def get_best_transpilation(circ, backend, opt=None, transpile_attempts=10):
+    our_circ = circ if isinstance(circ, Iterable) else [circ]
+    transpiled = transpile(our_circ, backend, optimization_level=opt)
+    for i in range(transpile_attempts - 1):
+        tmp = transpile(our_circ, backend, optimization_level=opt)
+        for j in range(len(transpiled)):
+            if tmp[j].depth() < transpiled[j].depth():
+                transpiled[j] = tmp[j]
+    return transpiled if isinstance(circ, Iterable) else transpiled[0]
+
+
+def get_measured_qubit_list(c):
+    measure_ops = [x for x in c.data if x[0].name == 'measure']
+    m_dict = {}
+    for op in measure_ops:
+        i, qubits, clbits = op
+        for cb, qb in zip(clbits, qubits):
+            m_dict[cb.index] = qb.index
+    qubit_list = [0 for _ in range(max(m_dict.keys()) + 1)]
+    for i in m_dict:
+        qubit_list[i] = m_dict[i]
+    return qubit_list
+
+
+def run_job(circ, backend, shots, run_kwargs=None, calibrate=False, measured_qubits=None, opt=3,
+            transpile_attempts=30):
+    # TODO: multiple circuits in single job
     if run_kwargs is None:
-        run_kwargs={}
-    job = backend.run(transpile(circ, backend), shots=shots, **run_kwargs)
+        run_kwargs = {}
+    transpiled_circ = get_best_transpilation(circ, backend, opt=opt, transpile_attempts=transpile_attempts)
+
+    job = backend.run(transpiled_circ, shots=shots, **run_kwargs)
     result = job.result()
     if calibrate:
-        meas_fitter = calibrate_readout(measured_qubits, backend, run_kwargs)
+        qubit_list = get_measured_qubit_list(transpiled_circ)
+        meas_fitter = calibrate_readout(qubit_list, backend, run_kwargs)
         counts = fix_measurements(meas_fitter, result)
     else:
         counts = result.get_counts(circ)

@@ -35,8 +35,7 @@ def test_topo_entropy(backend, size, qubits, subsystems, expected_values, type='
             tc.measure_pauli(qubits, gates)
 
         # note: number of shots is important
-        _, counts = run_job(tc.circ, backend, shots=15000, run_kwargs=run_kwargs,
-                            calibrate=calibrate, measured_qubits=tc.measured_qubits)
+        _, counts = run_job(tc.circ, backend, shots=15000, run_kwargs=run_kwargs, calibrate=calibrate)
         all_counts.append(counts)
     calculated_values = calculate_s_subsystems(all_counts, subsystems)
     # print(expected_values, [c / np.log(2) for calc in calculated_values for c in calc])

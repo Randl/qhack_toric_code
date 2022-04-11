@@ -25,8 +25,7 @@ def get_plaquette_ev(backend, size, plaquette_index, shots=1024, run_kwargs=None
     tc = get_toric_code(x, y)
 
     tc.measure_plaquette(py, px)
-    _, counts = run_job(tc.circ, backend, shots=shots, run_kwargs=run_kwargs,
-                        calibrate=calibrate, measured_qubits=tc.measured_qubits)
+    _, counts = run_job(tc.circ, backend, shots=shots, run_kwargs=run_kwargs, calibrate=calibrate)
     return count_to_parity(counts)
 
 
@@ -36,8 +35,7 @@ def get_star_ev(backend, size, star_index, shots=1024, run_kwargs=None, calibrat
     tc = get_toric_code(x, y)
 
     tc.measure_star(sx, sy)
-    _, counts = run_job(tc.circ, backend, shots=shots, run_kwargs=run_kwargs,
-                        calibrate=calibrate, measured_qubits=tc.measured_qubits)
+    _, counts = run_job(tc.circ, backend, shots=shots, run_kwargs=run_kwargs, calibrate=calibrate)
     return count_to_parity(counts)
 
 

@@ -13,11 +13,11 @@ def get_toric_code(x, y, classical_bit_count=4, ancillas_count=0, boundary_condi
         return ToricCodeMixed(x, y, classical_bit_count, ancillas_count)
 
 
-def calibrate_readout(qubits, backend, run_kwargs=None):
-    reg = QuantumRegister(bits=qubits)
+def calibrate_readout(qubit_indices, backend, run_kwargs=None):
+    reg = QuantumRegister(len(qubit_indices))
     meas_calibs, state_labels = complete_meas_cal(qr=reg, circlabel='mcal')
     # Execute the calibration circuits without noise
-    t_qc = transpile(meas_calibs, backend)
+    t_qc = transpile(meas_calibs, backend, initial_layout=qubit_indices, optimization_level=0)
     cal_results = backend.run(t_qc, shots=10000, **run_kwargs).result()
     meas_fitter = CompleteMeasFitter(cal_results, state_labels, circlabel='mcal')
     return meas_fitter

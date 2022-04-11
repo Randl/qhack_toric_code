@@ -85,8 +85,7 @@ def em_braiding_phase(backend, x, y):
 
     tc.circ.measure(tc.ancillas[0], 0)
     Nshots = 10000
-    _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={},
-                            calibrate=False, measured_qubits=tc.measured_qubits)
+    _, counts = run_job(tc.circ, backend, shots=Nshots, run_kwargs={}, calibrate=False)
     if '0' not in counts:
         counts['0'] = 0
     if '1' not in counts:
